@@ -2,10 +2,12 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const cors = require("cors");
 
 const router = express.Router();
 
 router.use(express.json());
+router.use(cors());
 
 // Register
 router.post("/register", async (req, res) => {
