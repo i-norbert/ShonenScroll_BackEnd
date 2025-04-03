@@ -12,7 +12,7 @@ app.use(cors());
 app.use("/uploads", express.static("uploads")); // Serve uploaded images
 
 // Sync the database (creates tables)
-sequelize.sync({ force: true }).then(() => {
+sequelize.sync().then(() => {
   console.log("Database synced!");
 });
 
