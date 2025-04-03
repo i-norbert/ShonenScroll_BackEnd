@@ -5,6 +5,8 @@ const User = require("../models/User");
 
 const router = express.Router();
 
+router.use(express.json());
+
 // Register
 router.post("/register", async (req, res) => {
   try {
