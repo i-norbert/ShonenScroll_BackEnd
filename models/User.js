@@ -20,12 +20,21 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+}, {
+  hooks: {
+    // Hash the password before saving or updating the user
+    beforeSave: async (user) => {
+      if (user.password) {
+        // Only hash the password if it has been changed (e.g., during registration or password update)
+        user.password = await bcrypt.hash(user.password, 10);
+      }
+    }
+  },
 });
 
-// Hash password before saving
-User.beforeCreate(async (user) => {
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
-});
+// Instance method to compare passwords during login
+User.prototype.isPasswordValid = async function(password) {
+  return await bcrypt.compare(password, this.password);
+};
 
 module.exports = User;

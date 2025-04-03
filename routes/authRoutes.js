@@ -13,33 +13,38 @@ router.use(cors());
 router.post("/register", async (req, res) => {
   try {
     const { username, email, password } = req.body;
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new User({ username, email, password: hashedPassword });
-
-    await user.save();
+    
+    // Create a new user instance and save it
+    const user = await User.create({ username, email, password });
     res.status(201).json({ message: "User created" });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+
 // Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+    // Find the user by email
+    const user = await User.findOne({ where: { email } });
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-    const isMatch = await bcrypt.compare(password, user.password);
+    // Compare the entered password with the hashed password
+    const isMatch = await user.isPasswordValid(password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-    res.json({ token, userId: user._id });
+    const JWT_SECRET = 'your_very_secret_key_here';
+
+    // Generate a JWT token
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1d" });
+    res.json({ token, userId: user.id });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 module.exports = router;
