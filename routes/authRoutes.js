@@ -30,11 +30,11 @@ router.post("/login", async (req, res) => {
 
     // Find the user by email
     const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) return res.status(400).json({ message: "No user is registered with this email." });
 
     // Compare the entered password with the hashed password
     const isMatch = await user.isPasswordValid(password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(400).json({ message: "Wrong password." });
 
     const JWT_SECRET = 'your_very_secret_key_here';
 
