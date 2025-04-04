@@ -7,6 +7,7 @@ const Comment = require("./Comment");
 
 const User = sequelize.define("User", {
   userid: {
+    autoIncrement: true,
     type: DataTypes.INTEGER,
     allowNull: false,
     unique: true
