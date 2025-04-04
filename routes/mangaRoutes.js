@@ -35,6 +35,28 @@ router.post("/", async (req, res) => {
   }
 });
 
+router.get("/search", async (req, res) => {
+  const { title } = req.query;
+
+  if (!title) {
+    return res.status(400).json({ error: "Search query is required." });
+  }
+
+  try {
+    const results = await Manga.findAll({
+      where: {
+        title: {
+          [require("sequelize").Op.iLike]: `%${title}%` // Case-insensitive partial match
+        }
+      }
+    });
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Upload Cover Image
 router.post("/:id/upload-cover", upload.single("coverImage"), async (req, res) => {
   try {
