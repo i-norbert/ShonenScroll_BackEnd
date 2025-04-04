@@ -45,6 +45,13 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
-
+router.get("/users", async (req, res) => {
+  try {
+    const users = await User.findAll(); // Adjust according to your ORM
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
 module.exports = router;
