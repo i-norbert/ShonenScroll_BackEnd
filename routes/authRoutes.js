@@ -12,10 +12,10 @@ router.use(cors());
 // Register
 router.post("/register", async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { userid,username, email, password } = req.body;
     
     // Create a new user instance and save it
-    const user = await User.create({ username, email, password });
+    const user = await User.create({ userid,username, email, password });
     res.status(201).json({ message: "User created" });
   } catch (err) {
     res.status(500).json({ message: err.message });

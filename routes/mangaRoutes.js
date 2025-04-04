@@ -1,8 +1,10 @@
-const express = require("express");
+  const express = require("express");
 const router = express.Router();
 const Manga = require("../models/Manga");
 const Chapter = require("../models/Chapter");
 const Page = require("../models/Page");
+const User = require("../models/User");
+const Comment = require("../models/Comment");
 const multer = require("multer");
 const cors = require("cors");
 
@@ -30,28 +32,6 @@ router.post("/", async (req, res) => {
   try {
     const manga = await Manga.create({ title, author });
     res.json(manga);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get("/search", async (req, res) => {
-  const { title } = req.query;
-
-  if (!title) {
-    return res.status(400).json({ error: "Search query is required." });
-  }
-
-  try {
-    const results = await Manga.findAll({
-      where: {
-        title: {
-          [require("sequelize").Op.iLike]: `%${title}%` // Case-insensitive partial match
-        }
-      }
-    });
-
-    res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -112,10 +92,40 @@ router.post("/chapter/:chapterId/page", upload.single("pageImage"), async (req, 
 
 // Get Chapters & Pages
 router.get("/:id", async (req, res) => {
-  const manga = await Manga.findByPk(req.params.id, { include: { model: Chapter, include: Page } });
+  const manga = await Manga.findByPk(req.params.id, { include: { model: Chapter, include: [
+        {
+          model: Page, // Include Page for each Chapter
+        },
+        {
+          model: Comment, // Include Comment for each Chapter
+          include: { model: User }, // Optionally, you can include the User who made the comment
+        },
+      ]}
+  });
   if (!manga) return res.status(404).json({ error: "Manga not found" });
 
   res.json(manga);
 });
+
+
+router.post("/chapter/:chapterId/comment", async (req, res) => {
+
+  try {
+    const chapter = await Chapter.findByPk(req.params.chapterId);
+    if (!chapter) return res.status(404).json({ error: "Chapter not found" });
+
+    const comment = await Comment.create({
+      ChapterId : req.params.chapterId,
+      UserId: req.body.cuserId,
+      content: req.body.content,
+      likes: 0,
+    });
+
+    res.json(chapter);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+
+})
 
 module.exports = router;

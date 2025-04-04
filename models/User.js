@@ -1,3 +1,4 @@
+
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const bcrypt = require("bcryptjs");
@@ -5,6 +6,11 @@ const Comment = require("./Comment");
 
 
 const User = sequelize.define("User", {
+  userid: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    unique: true
+  },
   username: {
     type: DataTypes.STRING,
     allowNull: false,

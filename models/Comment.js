@@ -10,11 +10,13 @@ const Comment = sequelize.define("Comment", {
         allowNull: false,
     },
 
-    // Optional: a username or userId field if not using a full User model
-    userId: {
+
+
+    likes:{
         type: DataTypes.INTEGER,
-        allowNull: true,
+
     },
+
 });
 
 // One Chapter has many Comments
