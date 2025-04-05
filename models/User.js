@@ -1,9 +1,7 @@
-
-const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const bcrypt = require("bcryptjs");
+const {DataTypes} = require("sequelize");
 const Comment = require("./Comment");
-
+const bcrypt = require("bcryptjs");
 
 const User = sequelize.define("User", {
   userid: {
@@ -30,22 +28,34 @@ const User = sequelize.define("User", {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  profilePicture: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
 }, {
   hooks: {
-    // Hash the password before saving or updating the user
     beforeSave: async (user) => {
-      if (user.password) {
-        // Only hash the password if it has been changed (e.g., during registration or password update)
+      if (user.changed("password")) {
         user.password = await bcrypt.hash(user.password, 10);
       }
     }
   },
 });
 
-// Instance method to compare passwords during login
 User.prototype.isPasswordValid = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
+
+// Comments
 User.hasMany(Comment);
 Comment.belongsTo(User);
+
+// Friends relationship (self-referencing many-to-many)
+User.belongsToMany(User, {
+  as: "Friends",
+  through: "UserFriends",
+  foreignKey: "userId",
+  otherKey: "friendId"
+});
+
 module.exports = User;
