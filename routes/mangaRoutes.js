@@ -128,4 +128,21 @@ router.post("/chapter/:chapterId/comment", async (req, res) => {
 
 })
 
+
+router.put("/comment/:commentId", async (req,res) => {
+
+  try {
+    const comment = await Comment.findOne({ where: { id: req.params.commentId } });
+    if (!comment) return res.status(404).json({ error: "Comment not found" });
+
+    comment.likes = comment.likes + 1;
+    await user.save();
+
+    res.json(comment);
+  } catch (err) {
+    console.error("Update failed:", err);
+    res.status(500).json({ error: "Failed to update Comment" });
+  }
+})
+
 module.exports = router;
