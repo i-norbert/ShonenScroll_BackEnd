@@ -8,7 +8,7 @@ const Comment = require("../models/Comment");
 const CommentLike = require("../models/CommentLike");
 const multer = require("multer");
 const cors = require("cors");
-
+const { Op } = require("sequelize");
 router.use(express.json());
 router.use("/uploads", express.static("uploads"));
 router.use(cors());
@@ -22,6 +22,48 @@ const storage = multer.diskStorage({
   },
 });
 const upload = multer({ storage });
+
+router.get("/search", async (req, res) => {
+  const { title = "", author = "", sort = "titleAsc", page = 1 } = req.query;
+
+  const pageSize = 10;
+  const offset = (page - 1) * pageSize;
+
+  try {
+    const whereClause = {
+      [Op.and]: [
+        title ? { title: { [Op.like]: `%${title}%` } } : {},
+        author ? { author: { [Op.like]: `%${author}%` } } : {},
+      ],
+    };
+
+    const orderClause = (() => {
+      switch (sort) {
+        case "titleAsc": return [["title", "ASC"]];
+        case "titleDesc": return [["title", "DESC"]];
+        case "newest": return [["createdAt", "DESC"]];
+        case "oldest": return [["createdAt", "ASC"]];
+        default: return [["title", "ASC"]];
+      }
+    })();
+
+    const { count, rows } = await Manga.findAndCountAll({
+      where: whereClause,
+      order: orderClause,
+      limit: pageSize,
+      offset,
+    });
+
+    res.json({
+      results: rows,
+      totalPages: Math.ceil(count / pageSize),
+      currentPage: Number(page),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 
 // Create Manga
 router.post("/", async (req, res) => {
