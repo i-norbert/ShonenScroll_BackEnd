@@ -1,7 +1,6 @@
-const sequelize = require("../config/database");
-const {DataTypes} = require("sequelize");
-const Comment = require("./Comment");
+const { DataTypes } = require("sequelize");
 const bcrypt = require("bcryptjs");
+const sequelize = require("../config/database");
 
 const User = sequelize.define("User", {
   userid: {
@@ -38,24 +37,12 @@ const User = sequelize.define("User", {
       if (user.changed("password")) {
         user.password = await bcrypt.hash(user.password, 10);
       }
-    }
+    },
   },
 });
 
 User.prototype.isPasswordValid = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
-
-// Comments
-User.hasMany(Comment);
-Comment.belongsTo(User);
-
-// Friends relationship (self-referencing many-to-many)
-User.belongsToMany(User, {
-  as: "Friends",
-  through: "UserFriends",
-  foreignKey: "userId",
-  otherKey: "friendId"
-});
 
 module.exports = User;

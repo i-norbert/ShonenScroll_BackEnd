@@ -4,6 +4,8 @@ const cors = require("cors");
 const sequelize = require("./config/database");
 const mangaRoutes = require("./routes/mangaRoutes");
 const authRoutes = require("./routes/authRoutes");
+const CommentLike = require("./models/CommentLike"); // import it so it registers
+
 
 const app = express();
 
@@ -13,15 +15,10 @@ app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static("uploads")); // Serve uploaded images
 
-// Sync the database (creates tables)
 sequelize.sync().then(() => {
   console.log("Database synced!");
+
+  app.listen(5000, () => {
+    console.log("Server running on port 5000");
+  });
 });
-
-
-
-
-
-// Start Server
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

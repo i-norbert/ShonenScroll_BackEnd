@@ -1,20 +1,17 @@
-  const express = require("express");
+const express = require("express");
 const router = express.Router();
 const Manga = require("../models/Manga");
 const Chapter = require("../models/Chapter");
 const Page = require("../models/Page");
 const User = require("../models/User");
 const Comment = require("../models/Comment");
+const CommentLike = require("../models/CommentLike");
 const multer = require("multer");
 const cors = require("cors");
 
-
-
 router.use(express.json());
-router.use("/uploads", express.static("uploads")); // Serve uploaded images
+router.use("/uploads", express.static("uploads"));
 router.use(cors());
-
-
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -37,7 +34,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// Upload Cover Image
+// Upload Cover
 router.post("/:id/upload-cover", upload.single("coverImage"), async (req, res) => {
   try {
     const manga = await Manga.findByPk(req.params.id);
@@ -90,59 +87,108 @@ router.post("/chapter/:chapterId/page", upload.single("pageImage"), async (req, 
   }
 });
 
-// Get Chapters & Pages
+// Get Manga by ID with Chapters, Pages, Comments + Likes
 router.get("/:id", async (req, res) => {
-  const manga = await Manga.findByPk(req.params.id, { include: { model: Chapter, include: [
-        {
-          model: Page, // Include Page for each Chapter
-        },
-        {
-          model: Comment, // Include Comment for each Chapter
-          include: { model: User }, // Optionally, you can include the User who made the comment
-        },
-      ]}
-  });
-  if (!manga) return res.status(404).json({ error: "Manga not found" });
-
-  res.json(manga);
+  try {
+    const manga = await Manga.findByPk(req.params.id, {
+      include: {
+        model: Chapter,
+        include: [
+          { model: Page },
+          {
+            model: Comment,
+            include: [
+              {
+                model: User,
+                attributes: ["userid", "username"],
+              },
+              {
+                model: User,
+                as: "Users",
+                through: { attributes: [] },
+                attributes: ["userid", "username"],
+              },
+            ],
+          },
+        ],
+      },
+    });
+    if (!manga) return res.status(404).json({ error: "Manga not found" });
+    res.json(manga);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 
+// Post Comment
 router.post("/chapter/:chapterId/comment", async (req, res) => {
-
   try {
     const chapter = await Chapter.findByPk(req.params.chapterId);
     if (!chapter) return res.status(404).json({ error: "Chapter not found" });
 
     const comment = await Comment.create({
-      ChapterId : req.params.chapterId,
-      UserId: req.body.cuserId,
+      ChapterId: chapter.id,
+      UserUserid: req.body.cuserId,
       content: req.body.content,
       likes: 0,
     });
 
-    res.json(chapter);
+    const fullComment = await Comment.findByPk(comment.id, {
+      include: [User],
+    });
+
+    res.status(201).json(fullComment);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
 
-})
-
-
-router.put("/comment/:commentId", async (req,res) => {
-
+// Like a comment
+router.post("/comment/:commentId/like", async (req, res) => {
+  console.log("Liking comment", req.params.commentId, "by user", req.body.userId);
   try {
-    const comment = await Comment.findOne({ where: { id: req.params.commentId } });
-    if (!comment) return res.status(404).json({ error: "Comment not found" });
+    const existing = await CommentLike.findOne({
+      where: { CommentId: req.params.commentId, UserId: req.body.userId },
+    });
+    if (existing) return res.status(400).json({ error: "You already liked this comment." });
 
-    comment.likes = comment.likes + 1;
-    await user.save();
 
-    res.json(comment);
+    await CommentLike.create({
+      UserId: req.body.userId,
+      CommentId: req.params.commentId*1,
+
+    });
+    console.log(typeof (req.params.commentId), typeof (req.body.userId) )
+    const comment = await Comment.findByPk(req.params.commentId);
+    comment.likes += 1;
+    await comment.save();
+
+    res.json({ success: true, likes: comment.likes });
   } catch (err) {
-    console.error("Update failed:", err);
-    res.status(500).json({ error: "Failed to update Comment" });
+    res.status(500).json({ error: err.message });
   }
-})
+});
+
+// Unlike a comment
+router.delete("/comment/:commentId/unlike", async (req, res) => {
+  const { userId } = req.body;
+  try {
+    const like = await CommentLike.findOne({
+      where: { CommentId: req.params.commentId, UserId: userId },
+    });
+    if (!like) return res.status(404).json({ error: "Like not found." });
+
+    await like.destroy();
+
+    const comment = await Comment.findByPk(req.params.commentId);
+    comment.likes -= 1;
+    await comment.save();
+
+    res.json({ success: true, likes: comment.likes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

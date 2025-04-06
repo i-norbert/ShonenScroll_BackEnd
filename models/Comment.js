@@ -1,29 +1,23 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Chapter = require("./Chapter");
+const User = require("./User");
 
-// Define the Comment model
 const Comment = sequelize.define("Comment", {
-    // The content of the comment
     content: {
         type: DataTypes.TEXT,
         allowNull: false,
     },
-
-
-
-    likes:{
+    likes: {
         type: DataTypes.INTEGER,
-
+        defaultValue: 0,
     },
-
 });
 
-// One Chapter has many Comments
-Chapter.hasMany(Comment, {
-    onDelete: "CASCADE", // Delete comments if the chapter is deleted
-});
+Chapter.hasMany(Comment, { onDelete: "CASCADE" });
 Comment.belongsTo(Chapter);
 
-// Export the model
+User.hasMany(Comment);
+Comment.belongsTo(User);
+
 module.exports = Comment;
