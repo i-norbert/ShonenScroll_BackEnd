@@ -14,6 +14,7 @@ app.use("/auth",authRoutes)
 app.use(express.json());
 app.use(cors());
 app.use("/uploads", express.static("uploads")); // Serve uploaded images
+app.use("/defaults", express.static("defaults"));
 
 sequelize.sync().then(() => {
   console.log("Database synced!");
