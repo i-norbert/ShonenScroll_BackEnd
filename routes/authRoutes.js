@@ -78,9 +78,12 @@ router.post("/:id/set-avatar", async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
 
     const validAvatars = [
-      "avatar1.png",
-      "avatar2.png",
-      "avatar3.png",
+      "ichigo.jpg",
+      "goku.jpg",
+      "nami.jpg",
+      "naruto.jpg",
+      "gon.jpg",
+      "2b.jpg"
       // Add all valid avatar file names here
     ];
 
