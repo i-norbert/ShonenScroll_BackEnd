@@ -68,6 +68,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// POST /users/:id/set-avatar
+router.post("/:id/set-avatar", async (req, res) => {
+  const { avatarName } = req.body; // like "avatar1.png"
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const validAvatars = [
+      "avatar1.png",
+      "avatar2.png",
+      "avatar3.png",
+      // Add all valid avatar file names here
+    ];
+
+    if (!validAvatars.includes(avatarName)) {
+      return res.status(400).json({ error: "Invalid avatar selection" });
+    }
+
+    user.profilePicture = `/defaults/${avatarName}`;
+    await user.save();
+
+    res.json({ message: "Avatar updated", avatar: user.profilePicture });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ✅ GET ALL USERS
 router.get("/users", async (req, res) => {
   try {
