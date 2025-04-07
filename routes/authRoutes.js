@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const cors = require("cors");
+const fs = require("fs");
+const path = require("path");
 
 const router = express.Router();
 
@@ -66,6 +68,21 @@ router.post("/login", async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// GET /users/default-avatars
+router.get("/default-avatars", (req, res) => {
+  const avatarsDir = path.join(__dirname, "../defaults");
+
+  fs.readdir(avatarsDir, (err, files) => {
+    if (err) {
+      console.error("Error reading default avatars:", err);
+      return res.status(500).json({ error: "Failed to load avatars" });
+    }
+
+    const avatarUrls = files.map(file => `http://localhost:5000/defaults/${file}`);
+    res.json(avatarUrls);
+  });
 });
 
 // POST /users/:id/set-avatar
