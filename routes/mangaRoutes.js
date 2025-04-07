@@ -13,6 +13,8 @@ router.use(express.json());
 router.use("/uploads", express.static("uploads"));
 router.use(cors());
 
+const viewTimestamps = {};
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -230,6 +232,35 @@ router.delete("/comment/:commentId/unlike", async (req, res) => {
     res.json({ success: true, likes: comment.likes });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Increment Manga Views
+router.post('/:id/view', async (req, res) => {
+  const { id } = req.params;
+  const userId = req.body.userId || null; // optional from frontend
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  const key = `${userId || ip}-${id}`;
+  const now = Date.now();
+
+  if (viewTimestamps[key] && now - viewTimestamps[key] < 30 * 1000) {
+    return res.status(200).json({ message: 'View recently counted' });
+  }
+
+  viewTimestamps[key] = now;
+
+  try {
+    const manga = await Manga.findByPk(id);
+    if (!manga) return res.status(404).json({ message: 'Manga not found' });
+
+    manga.views += 1;
+    await manga.save();
+
+    res.json({ views: manga.views });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Error updating views' });
   }
 });
 

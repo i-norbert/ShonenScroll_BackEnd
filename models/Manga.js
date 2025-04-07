@@ -10,7 +10,11 @@ const Manga = sequelize.define("Manga", {
     type: DataTypes.STRING,
   },
   coverImage: {
-    type: DataTypes.STRING, // Store local file path
+    type: DataTypes.STRING,
+  },
+  views: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
   },
 });
 
