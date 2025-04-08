@@ -6,6 +6,7 @@ const mangaRoutes = require("./routes/mangaRoutes");
 const authRoutes = require("./routes/authRoutes");
 const CommentLike = require("./models/CommentLike"); // import it so it registers
 const friendRoutes = require("./routes/friendRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
@@ -16,6 +17,7 @@ app.use(cors());
 app.use("/uploads", express.static("uploads")); // Serve uploaded images
 app.use("/defaults", express.static("defaults"));
 app.use("/friends", friendRoutes);
+app.use("/messages", messageRoutes)
 
 const User = require("./models/User");
 const Friendship = require("./models/Friendship");
