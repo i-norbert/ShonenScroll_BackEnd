@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const sequelize = require("../config/database");
+const Friendship = require("./Friendship")
 
 const User = sequelize.define("User", {
   userid: {
@@ -44,5 +45,12 @@ const User = sequelize.define("User", {
 User.prototype.isPasswordValid = async function(password) {
   return await bcrypt.compare(password, this.password);
 };
+
+User.belongsToMany(User, {
+  through: Friendship,
+  as: "Friends",
+  foreignKey: "userId",
+  otherKey: "friendId",
+});
 
 module.exports = User;
