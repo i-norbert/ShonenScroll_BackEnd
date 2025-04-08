@@ -7,5 +7,8 @@ router.post("/accept", friendController.acceptRequest);
 router.post("/decline", friendController.declineRequest);
 router.get("/list/:userId", friendController.getFriends);
 router.get("/pending/:userId", friendController.getPending);
+router.post("/delete", friendController.deleteFriend);
+router.get("/sent/:userId", friendController.getSent);
+
 
 module.exports = router;

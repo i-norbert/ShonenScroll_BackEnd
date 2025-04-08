@@ -19,6 +19,7 @@ exports.sendRequest = async (req, res) => {
   }
 };
 
+
 // Accept Friend Request
 exports.acceptRequest = async (req, res) => {
   const { userId, friendId } = req.body;
@@ -82,12 +83,69 @@ exports.getPending = async (req, res) => {
   try {
     const requests = await Friendship.findAll({
       where: { friendId: userId, status: "pending" },
-      include: [{ model: User, as: "Requester", foreignKey: "userId" }],
+      include: [
+        {
+          model: User,
+          as: "Requester", // must match alias in `Friendship.belongsTo`
+          attributes: ["userid", "username", "profilePicture"]
+        }
+      ],
     });
 
-    res.json(requests);
+
+
+    // Return just the requester user objects
+    const users = requests.map(r => r.Requester);
+    res.json(users);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to get pending requests" });
   }
 };
+
+// Delete a Friend (unfriend)
+exports.deleteFriend = async (req, res) => {
+  const { userId, friendId } = req.body;
+
+  try {
+    // Remove both directions of the accepted friendship
+    const deleted = await Promise.all([
+      Friendship.destroy({ where: { userId, friendId, status: "accepted" } }),
+      Friendship.destroy({ where: { userId: friendId, friendId: userId, status: "accepted" } })
+    ]);
+
+    const deletedCount = deleted[0] + deleted[1];
+    if (deletedCount === 0) {
+      return res.status(404).json({ error: "Friendship not found" });
+    }
+
+    res.json({ message: "Friendship deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete friendship" });
+  }
+};
+
+exports.getSent = async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const requests = await Friendship.findAll({
+      where: { userId, status: "pending" },
+      include: [
+        {
+          model: User,
+          as: "Addressee", // Correct alias that matches the model definition
+          attributes: ["userid", "username", "profilePicture"]
+        }
+      ]
+    });
+
+    const users = requests.map(r => r.Addressee); // Also updated to match alias
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to get sent requests" });
+  }
+};
+

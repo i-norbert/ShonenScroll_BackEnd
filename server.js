@@ -17,6 +17,17 @@ app.use("/uploads", express.static("uploads")); // Serve uploaded images
 app.use("/defaults", express.static("defaults"));
 app.use("/friends", friendRoutes);
 
+const User = require("./models/User");
+const Friendship = require("./models/Friendship");
+
+User.belongsToMany(User, {
+  through: Friendship,
+  as: "Friends",
+  foreignKey: "userId",
+  otherKey: "friendId",
+});
+
+
 sequelize.sync().then(() => {
   console.log("Database synced!");
 
