@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:sqlite:C:\Users\Acer\Documents\GitHub\ShonenScroll_BackEnd\database.sqlite</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="database [2]" uuid="72a54889-8f61-42f0-8bb1-21712eae0d4c">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\nones\Documents\GitHub\ShonenScroll_BackEnd\database.sqlite</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

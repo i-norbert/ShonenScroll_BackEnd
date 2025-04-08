@@ -25,18 +25,17 @@ router.get("/conversation/:user1/:user2", async (req, res) => {
 
 // Send a message
 router.post("/", async (req, res) => {
-    const { senderId, receiverId, content } = req.body;
+    const { senderId, receiverId, content, type } = req.body;
 
-    const message = await Message.create({ senderId, receiverId, content });
+    const message = await Message.create({ senderId, receiverId, content, type});
     res.json(message);
 });
 
 // Get all chats for a user (with latest message + user info)
 router.get("/chats/:userId", async (req, res) => {
-    const { userId } = req.params;
+    const userId = parseInt(req.params.userId);
 
     try {
-        // Get all unique userIds this user has messaged with
         const messages = await Message.findAll({
             where: {
                 [Op.or]: [
@@ -51,16 +50,33 @@ router.get("/chats/:userId", async (req, res) => {
             ]
         });
 
-        // Map to latest message per unique user
         const chatMap = new Map();
 
         for (const message of messages) {
-            const otherUser = message.senderId == userId ? message.Receiver : message.Sender;
+            const isSender = message.senderId === userId;
+            const otherUser = isSender ? message.Receiver : message.Sender;
+
+            // Skip if the associated user wasn't found
+            if (!otherUser) continue;
+
             if (!chatMap.has(otherUser.userid)) {
+                let preview = message.content;
+
+                if (message.type === "chapter") {
+                    try {
+                        const parsed = JSON.parse(message.content);
+                        preview = `📘 ${parsed.title}`;
+                    } catch (err) {
+                        preview = "[Chapter]";
+                    }
+                }
+
                 chatMap.set(otherUser.userid, {
                     user: otherUser,
                     lastMessage: {
+                        type: message.type,
                         content: message.content,
+                        preview,
                         timestamp: message.timestamp
                     }
                 });
@@ -68,13 +84,13 @@ router.get("/chats/:userId", async (req, res) => {
         }
 
         const chatList = Array.from(chatMap.values());
-
         res.json(chatList);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Failed to load chats" });
     }
 });
+
 router.post("/start", async (req, res) => {
     const { senderId, receiverId } = req.body;
 
