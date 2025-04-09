@@ -4,6 +4,7 @@ const Manga = require("../models/Manga");
 const Chapter = require("../models/Chapter");
 const Page = require("../models/Page");
 const User = require("../models/User");
+const Favorite = require("../models/Favorites");
 const Comment = require("../models/Comment");
 const CommentLike = require("../models/CommentLike");
 const multer = require("multer");
@@ -262,6 +263,42 @@ router.post('/:id/view', async (req, res) => {
     console.error(err);
     res.status(500).json({ message: 'Error updating views' });
   }
+});
+
+router.post("/like", async (req, res) => {
+  const { userId, mangaId } = req.body;
+
+  try {
+    await Favorite.create({ userId, mangaId });
+    res.status(200).json({ message: "Manga liked!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.delete("/unlike", async (req, res) => {
+  const { userId, mangaId } = req.body;
+
+  try {
+    await Favorite.destroy({ where: { userId, mangaId } });
+    res.status(200).json({ message: "Manga unliked!" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const user = await User.findByPk(userId, {
+    include: {
+      model: Manga,
+      as: "favorites",
+    },
+  });
+
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  res.json(user.favorites);
 });
 
 module.exports = router;

@@ -18,4 +18,10 @@ const Manga = sequelize.define("Manga", {
   },
 });
 
+Manga.belongsToMany(require("./User"), {
+  through: "Favorite",
+  foreignKey: "mangaId",
+  as: "likedBy",
+});
+
 module.exports = Manga;

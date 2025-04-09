@@ -46,5 +46,19 @@ User.prototype.isPasswordValid = async function(password) {
 };
 
 
+User.belongsToMany(User, {
+  through: Friendship,
+  as: "Friends",
+  foreignKey: "userId",
+  otherKey: "friendId",
+});
+
+User.belongsToMany(require("./Manga"), {
+  through: "Favorite",
+  foreignKey: "userId",
+  as: "favorites",
+});
+
+
 
 module.exports = User;
