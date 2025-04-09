@@ -10,14 +10,14 @@ const messageRoutes = require("./routes/messageRoutes");
 
 const app = express();
 
-app.use("/manga",mangaRoutes)
-app.use("/auth",authRoutes)
+app.use("/api/manga",mangaRoutes)
+app.use("/api/auth",authRoutes)
 app.use(express.json());
 app.use(cors());
-app.use("/uploads", express.static("uploads")); // Serve uploaded images
-app.use("/defaults", express.static("defaults"));
-app.use("/friends", friendRoutes);
-app.use("/messages", messageRoutes)
+app.use("/api/uploads", express.static("uploads")); // Serve uploaded images
+app.use("/api/defaults", express.static("defaults"));
+app.use("/api/friends", friendRoutes);
+app.use("/api/messages", messageRoutes)
 
 const User = require("./models/User");
 const Friendship = require("./models/Friendship");
@@ -33,7 +33,7 @@ User.belongsToMany(User, {
 sequelize.sync().then(() => {
   console.log("Database synced!");
 
-  app.listen(5000, () => {
-    console.log("Server running on port 5000");
+  app.listen(5555, () => {
+    console.log("Server running on port 5555");
   });
 });

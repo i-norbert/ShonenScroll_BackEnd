@@ -80,7 +80,7 @@ router.get("/default-avatars", (req, res) => {
       return res.status(500).json({ error: "Failed to load avatars" });
     }
 
-    const avatarUrls = files.map(file => `http://localhost:5000/defaults/${file}`);
+    const avatarUrls = files.map(file => `http://localhost:5555/api/defaults/${file}`);
     res.json(avatarUrls);
   });
 });
