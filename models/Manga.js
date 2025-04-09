@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Favorite = require("./Favorites");
+
 
 const Manga = sequelize.define("Manga", {
   title: {
@@ -19,10 +19,6 @@ const Manga = sequelize.define("Manga", {
   },
 });
 
-Manga.belongsToMany(require("./User"), {
-  through: "Favorite",
-  foreignKey: "mangaId",
-  as: "likedBy",
-});
+
 
 module.exports = Manga;

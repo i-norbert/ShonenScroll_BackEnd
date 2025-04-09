@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const sequelize = require("../config/database");
-const Favorite = require("./Favorites");
+
 
 const User = sequelize.define("User", {
   userid: {
@@ -47,18 +47,6 @@ User.prototype.isPasswordValid = async function(password) {
 };
 
 
-User.belongsToMany(User, {
-  through: Friendship,
-  as: "Friends",
-  foreignKey: "userId",
-  otherKey: "friendId",
-});
-
-User.belongsToMany(require("./Manga"), {
-  through: "Favorite",
-  foreignKey: "userId",
-  as: "favorites",
-});
 
 
 
