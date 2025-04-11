@@ -31,6 +31,7 @@ const User = sequelize.define("User", {
   profilePicture: {
     type: DataTypes.STRING,
     allowNull: true,
+    defaultValue: "http://localhost:5555/api/defaults/defaultprof.jpg",
   },
 }, {
   hooks: {

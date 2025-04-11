@@ -141,7 +141,7 @@ router.put("/users/:id", async (req, res) => {
     res.json({
       message: "Profile updated",
       user: {
-        id: user.userid,
+        userid: user.userid,
         username: user.username,
         email: user.email,
         profilePicture: user.profilePicture,
