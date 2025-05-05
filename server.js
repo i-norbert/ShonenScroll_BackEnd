@@ -1,12 +1,12 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-
 const User = require("./models/User");
 const Friendship = require("./models/Friendship");
 const sequelize = require("./config/database");
 const mangaRoutes = require("./routes/mangaRoutes");
 const authRoutes = require("./routes/authRoutes");
-const CommentLike = require("./models/CommentLike"); // import it so it registers
+const CommentLike = require("./models/CommentLike"); 
 const friendRoutes = require("./routes/friendRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const Manga = require("./models/Manga");
@@ -17,7 +17,7 @@ app.use("/api/manga",mangaRoutes)
 app.use("/api/auth",authRoutes)
 app.use(express.json());
 app.use(cors());
-app.use("/api/uploads", express.static("uploads")); // Serve uploaded images
+app.use("/api/uploads", express.static("uploads")); 
 app.use("/api/defaults", express.static("defaults"));
 app.use("/api/friends", friendRoutes);
 app.use("/api/messages", messageRoutes)

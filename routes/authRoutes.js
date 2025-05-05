@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -5,13 +6,12 @@ const User = require("../models/User");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
-
+const verifyToken = require("../middlewares/jwtverify")
 const router = express.Router();
-
 router.use(express.json());
 router.use(cors());
 
-const JWT_SECRET = 'your_very_secret_key_here';
+
 
 // ✅ REGISTER
 router.post("/register", async (req, res) => {
@@ -54,7 +54,9 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Wrong password." });
     }
 
-    const token = jwt.sign({ id: user.userid }, JWT_SECRET, { expiresIn: "1d" });
+    console.log("JWT_SECRET:"+process.env.JWT_SECRET);
+
+    const jwtoken = jwt.sign({ id: user.userid }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
     res.json({
       message: "Login successful",
@@ -64,12 +66,25 @@ router.post("/login", async (req, res) => {
         email: user.email,
         profilePicture: user.profilePicture,
       },
+      token: jwtoken,
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
+router.get("/me", verifyToken, async (req, res) => {
+  try {
+      const user = await User.findByPk(req.userId);
+
+      if (!user) return res.status(404).json({ message: "User not found" });
+
+      res.json({ user });
+  } catch (err) {
+      console.error("Error fetching user:", err);
+      res.status(500).json({ message: "Server error" });
+  }
+});
 // GET /users/default-avatars
 router.get("/default-avatars", (req, res) => {
   const avatarsDir = path.join(__dirname, "../defaults");
